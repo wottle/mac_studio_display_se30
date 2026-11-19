@@ -1,4 +1,4 @@
-"""Neo-Mac monitor v0.11 -- iPad 1/2 LCD in a ribbon-profile classic-Mac shell (no Pi).
+"""Mac Studio Display SE/30 v0.12 -- iPad 1/2 LCD in a ribbon-profile classic-Mac shell (no Pi).
 Body frame (frame, cover, LCD): +X viewer's right, Y=0 front face, +Y to the rear, Z=0 at the seam, +Z up.
 World frame: body frame tilted back TILT about X and placed on the base stub; desk at Z=0.
 All dimensions mm.  CadQuery 2.x.
@@ -253,6 +253,30 @@ def vent_cutters():
 
 def make_cover():
     return make_cover_plate().union(make_bay_lid())
+
+# ------------------------------------------------------------------ optional cover plate with a carry handle
+HANDLE_W, HANDLE_D, HANDLE_ZT, HANDLE_ZB = 120.0, 30.0, 231.0, 192.0   # width at the plate, protrusion, top (clears the z 238.5 screw), cheek bottom
+HANDLE_SLAB, HANDLE_LIP_DROP, HANDLE_LIP_T = 6.0, 7.0, 3.0          # shelf thickness; lip hangs 7 mm below it, 3 mm flat at the tip
+HANDLE_ROOT_D, HANDLE_ROOT_H, HANDLE_CHEEK_T = 5.0, 20.0, 7.0       # web filling the shelf root; cheek thickness
+
+def make_handle():
+    """Squared ledge in the spirit of the compact Mac's grip, standing out from the cover plate.
+    Prints with the plate, inner face down: shelf and cheeks rise straight up; the lip's inner face is 45 deg."""
+    y1 = T + CV_T; yt = y1 + HANDLE_D; zt = HANDLE_ZT; zs = zt - HANDLE_SLAB
+    x0, x1 = CX - HANDLE_W / 2, CX + HANDLE_W / 2
+    pts = [(y1 - 0.5, zt), (yt, zt), (yt, zs - HANDLE_LIP_DROP), (yt - HANDLE_LIP_T, zs - HANDLE_LIP_DROP),
+           (yt - HANDLE_LIP_T - HANDLE_LIP_DROP, zs), (y1 + HANDLE_ROOT_D, zs), (y1 + HANDLE_ROOT_D, zt - HANDLE_ROOT_H), (y1 - 0.5, zt - HANDLE_ROOT_H)]
+    s = profile(pts, x0, x1)
+    for cx0, cx1 in ((x0, x0 + HANDLE_CHEEK_T), (x1 - HANDLE_CHEEK_T, x1)):
+        s = s.union(profile([(y1 - 0.5, zt), (yt, zt), (yt, zs - HANDLE_LIP_DROP), (y1 - 0.5, HANDLE_ZB)], cx0, cx1))
+    for sx, sgn in ((x0, 1), (x1, -1)):                       # ends lean in at the bay lid's angle; top stays square
+        c = box(-60, 0, y1 - 1, y1 + 80, HANDLE_ZB - 10, zt + 10) if sgn > 0 else box(0, 60, y1 - 1, y1 + 80, HANDLE_ZB - 10, zt + 10)
+        s = s.cut(c.rotate((0, y1, 0), (0, y1, 1), -sgn * BAY_TAPER).translate((sx, 0, 0)))
+    return s.edges("|Y").edges(">Y").edges(">Z").chamfer(EDGE_CH) if False else s
+
+def make_cover_plate_handle():
+    """Alternate cover plate: the standard plate plus the handle, one part. Same screws, same bay lid."""
+    return make_cover_plate().union(make_handle())
 
 # ------------------------------------------------------------------ small parts
 def make_bracket(hx, z, d):

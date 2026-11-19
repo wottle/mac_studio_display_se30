@@ -1,4 +1,4 @@
-Neo-Mac monitor v0.11 -- CAD checks only (nothing sliced or printed)
+Mac Studio Display SE/30 v0.12 -- CAD checks only (nothing sliced or printed)
 
 [PASS] base: one valid solid  
 [PASS] base: fits 350 bed  107.7 x 162.2 x 250.0
@@ -63,11 +63,17 @@ Neo-Mac monitor v0.11 -- CAD checks only (nothing sliced or printed)
 [PASS] x stop full right: clear of frame, cover and brackets from 4.5 mm outward to 5 mm inward  
 [PASS] x stop corner right: clear of frame, cover and brackets from 4.5 mm outward to 5 mm inward  
 [PASS] x stop low right: clear of frame, cover and brackets from 4.0 mm outward to 5 mm inward  
+[PASS] cover_plate_handle: one valid solid, fits bed  246.0 x 200.0 x 33.0
+[PASS] cover_plate_handle contains the whole standard plate with all 11 holes open (same screws, same bay lid)  
+[PASS] cover_plate_handle clears every other part  
+[PASS] cover screw heads not covered by the handle  
+[PASS] cover_plate_handle: no overhang beyond 45 deg printed inner face down  0.0 mm2
 [PASS] front skin under insert holes >= 2.5  2.5 (brackets, stops), 6.5 (cover)
 [PASS] wall behind contour lines at trough >= 5  5.8
 [PASS] joint insert: skin to the front face >= 3, clear of contour lines and groove  skin 3.35; hole z 8.6-12.8 between lines at 7.8 and 13.6
 [PASS] floppy notch leaves wall in front of tongue  1.5
 [PASS] ballast channel skins >= 3  3.3; bar clearance 0.8 x 0.64
+[PASS] handle shelf root bending stress, whole monitor hanging from it, < 2 MPa  0.53 MPa for 14.2 N at 27 mm (PLA across layers is roughly 15-25 MPa); shelf alone, ignoring web and cheeks
 [PASS] forward tip angle with two bars >= 15 deg  16.9
 
 Overall: 250 W x 162 D x 333 H mm
@@ -97,3 +103,4 @@ Print list (print orientation, mm):
   height_stop_inboard_right x1  black    66.8 x   28.5 x    6.9      4.0 cm3 solid
   x_stop_corner_right x1  black    24.0 x   23.4 x    6.9      0.9 cm3 solid
   x_stop_low_right x1  black    27.5 x   44.4 x    6.9      1.7 cm3 solid
+  cover_plate_handle x1  plat    246.0 x  200.0 x   33.0    103.5 cm3 solid

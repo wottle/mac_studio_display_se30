@@ -1,10 +1,12 @@
-# Neo-Mac monitor
+# Mac Studio Display SE/30
+
+GitHub repo: `wottle/mac_studio_display_se30` (renamed 2026-11-19; earlier names NeoMac_LCD_Case and neomac-lcd-case, and the working name "Neo-Mac" survives in file names such as `neomac.py`, `neomac_lcd_case.3mf` and `neomac_assembly.step`; leave those unless Mike asks).
 
 A 3D-printed monitor shell for an iPad 1/2 LCD that looks like a thin, futuristic classic Mac.
 Sister project to the Snow White Happy Pi (slim offset case). This one is a **monitor only: no Pi inside**.
 
-Current version: **v0.11** (2026-11-18). This folder is the GitHub repo for the project; Mike commits and pushes it himself.
-Mike printed a base at v0.8 (v0.9 changed only its badge recess). v0.10 and v0.11 change only the bay lid; the cover plate is unchanged.
+Current version: **v0.12** (2026-11-19). This folder is the GitHub repo for the project; Mike commits and pushes it himself.
+Mike printed a base at v0.8 (v0.9 changed only its badge recess). v0.10 and v0.11 change only the bay lid; the cover plate is unchanged. v0.12 adds an optional cover plate with a handle; nothing existing changed.
 
 ## Status
 
@@ -29,6 +31,7 @@ Everything must print **without supports**. That rule has driven most of the geo
 | `base` | 1 | platinum | on its side, profile as vertical walls | 250 mm tall. Carries tongue, rear flange, lowest contour line, floppy notch, badge recess, two ballast channels |
 | `front_frame` | 1 | platinum | face down | Bottom edge is a plain flat face on the bed. Five closed contour grooves. LCD pocket open to the rear |
 | `cover_plate` | 1 | platinum | outer face down | Flat 3 mm U-shaped plate with four ears for the lid posts |
+| `cover_plate_handle` | optional, replaces `cover_plate` | platinum | **inner** face down | Standard plate + carry handle in one part (`make_cover_plate_handle`) |
 | `bay_lid` | 1 | platinum | ceiling down | Controller bay. Walls lean out 30 deg from vertical (`BAY_TAPER`), four screw posts rise from the walls |
 | `lcd_bracket` | 4 | black | as exported | Hold-down brackets on the side rims |
 | `height_stop_{standard,corner,inboard}_{left,right}` | pick 1 per side | black | as exported | Optional sliding stops under the panel's bottom edge |
@@ -54,6 +57,7 @@ Hardware: 22 x M3 heat-set inserts (5 mm long; holes 4.2 mm x 5.5 deep, all vert
 - **Back cover in two pieces** (plate + lid) so neither needs supports.
 - **Ballast is required.** Two crosswise channels at the rear of the foot for 1" x 3/16" bar, same idea as the Happy Pi. Estimated forward tip angle: 2 deg with no bar, 11 with one, 17 with two (assumed masses, see `docs/validation_report.txt`).
 - **Badge recess:** for Mike's standard square badge plate; square 12 x 12 mm, 1.6 mm deep, square corners (`BADGE*`), on the base's lower band at the left; centre 29 mm from the left side and 14 mm below the seam.
+- **Carry handle (v0.12, Mike's request):** optional alternate cover plate, inspired by the compact Mac's top-rear grip but protruding instead of recessed. A squared ledge, 120 mm wide (Mike chose narrower than the 150 mm mock-up), 30 mm out, 6 mm shelf, lip dropping 7 mm with a 45 deg inner face, cheeks leaning in at `BAY_TAPER`, top at z 231 so the top-centre cover screw stays reachable. Printed **as part of the plate**, inner face down, so it needs no extra holes, inserts or screws (Mike wanted none). Finger gap behind the lip 15 mm at the shelf, 22 mm at the lip bottom; widened from 9 mm after the first section view by thinning the root web to 5 mm. Rejected: hollow hoods and a bridge pull (would have needed a separate screw-on part).
 - **Seats are recessed** (`SEAT_Y = 8.0`) so bracket and stop screw heads stay under the cover. Clearance is 0.15 mm with a 1.65 mm button head; taller heads need deeper seats.
 
 ## Measured hardware (Mike's panel)
@@ -79,6 +83,7 @@ source/neomac.py        all parameters and geometry (CadQuery 2.x). Start here.
 source/export_all.py    writes stl/, step/, docs/validation_report.txt; runs the checks
 source/coupons.py       writes coupons/*.stl
 source/render_final.py  writes docs/images/*.png (uses render.py; scratch in source/_build, gitignored)
+source/animate.py       writes docs/assembly.mp4 and docs/images/assembly.gif: exploded view assembling, then a turn to the front with the screen on. Uses the standard assembly (plain cover plate, `standard` height stops, `full` X stops). 480 frames, about 20 minutes
 source/requirements.txt
 ```
 
@@ -89,6 +94,7 @@ pip install -r requirements.txt
 python export_all.py      # must end with ALL PASS
 python coupons.py
 python render_final.py
+python animate.py         # optional, slow; needs ffmpeg
 ```
 
 Images, STLs and README figures are generated: after a geometry change, rerun all three and update any numbers quoted in README.md.
@@ -130,3 +136,5 @@ Images, STLs and README figures are generated: after a geometry change, rerun al
 | v0.9 | Badge recess 12 x 12 x 1.6 mm (was 10 x 11 x 1.2), sized for the square badge plate Mike uses across his projects. Repo set up for GitHub; unused bezel code removed (no geometry change) |
 | v0.10 | Bay lid deeper (16 to 21 mm clear inside) with steeper walls (45 to 30 deg from vertical); footprint and screw posts unchanged, so the cover plate is unchanged |
 | v0.11 | 20 rounded vent slots in the bay lid's top wall for controller heat; lid only |
+| v0.12 | Optional `cover_plate_handle`: standard plate plus a 120 mm squared carry ledge, printed inner face down; no new hardware |
+| v0.12 (docs) | Repo renamed `mac_studio_display_se30`; project name in docs is now Mac Studio Display SE/30; assembly animation added (`animate.py`). No geometry change |

@@ -33,6 +33,21 @@ R.render(acts, "rear_low", (1200, 1000), img("05_bay_opening.png"), focal=(122, 
 R.VIEWS["vent"] = (160, 38, False)
 R.render(acts, "vent", (1400, 900), img("10_vents.png"), focal=M.to_world((M.CX, M.T + M.CV_T + 10, 172)), dist=520)
 
+# ---- optional cover plate with handle
+ph = dict(P); ph["cover_plate"] = dict(shape=M.place(M.make_cover_plate_handle()), col="plat")
+acts_h = scene(ph, q)
+R.VIEWS["hclose"] = (148, 28, False)
+R.render(acts_h, "rear34", (1200, 1100), img("11_handle_plate.png"), focal=(122, 60, 165))
+R.render(acts_h, "hclose", (1400, 1000), img("12_handle_closeup.png"), focal=M.to_world((M.CX, M.T + M.CV_T + 12, 212)), dist=520)
+keep = box(-10, M.CX, -500, 800, -50, 600)
+sec = {n: dict(shape=d["shape"].intersect(keep), col=d["col"]) for n, d in ph.items() if d["shape"].val().BoundingBox().xmin < M.CX - 1}
+R.render(scene(sec, NOQUAD), "sec", (3200, 3200), os.path.join(R.OUT, "_hsec.png"), focal=M.to_world((M.CX, M.T + M.CV_T + 14, 212)))
+im = Image.open(os.path.join(R.OUT, "_hsec.png")); w, hh = im.size; r = int(42 * hh / (2 * 215))
+im = im.crop((w // 2 - r, hh // 2 - r, w // 2 + r, hh // 2 + r)).resize((900, 900), Image.LANCZOS)
+d = ImageDraw.Draw(im); d.text((20, 16), "Handle section at the centre (rear at right)", font=font(26, True), fill=(30, 30, 34))
+d.text((20, 52), "Fingers come up from below and hook behind the lip", font=font(22), fill=(80, 80, 86))
+im.save(img("13_handle_section.png"))
+
 # ---- exploded
 e = {}
 for n, d in P.items():

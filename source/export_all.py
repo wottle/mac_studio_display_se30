@@ -106,6 +106,29 @@ for side, nm in ((1, "left"), (-1, "right")):
             d_ = dict(body=M.make_x_stop(side, 0, v), ori="rear_down"); o = oriented(d_); bb = o.val().BoundingBox()
             cq.exporters.export(o, f"{OUT}/stl/x_stop_{v}_{nm}__x1.stl", tolerance=0.02)
             rows.append((f"x_stop_{v}_{nm}", 1, "black", bb.xlen, bb.ylen, bb.zlen, vol(o) / 1000))
+# ---- optional cover plate with handle (replaces cover_plate)
+ph = M.make_cover_plate_handle()
+d_ = dict(body=ph, ori="front_down"); o = oriented(d_); bb = o.val().BoundingBox()
+chk("cover_plate_handle: one valid solid, fits bed", ph.val().isValid() and ph.solids().size() == 1 and max(bb.xlen, bb.ylen, bb.zlen) <= BED, f"{bb.xlen:.1f} x {bb.ylen:.1f} x {bb.zlen:.1f}")
+cq.exporters.export(o, f"{OUT}/stl/cover_plate_handle__x1.stl", tolerance=0.02, angularTolerance=0.1)
+rows.append(("cover_plate_handle", 1, "plat", bb.xlen, bb.ylen, bb.zlen, vol(o) / 1000))
+std = M.make_cover_plate()
+holes = [M.cyl_y(x, z, 3.3, M.T - 1, M.T + M.CV_T + 1) for x, z in M.CV_SCREWS + M.LID_POSTS]
+chk("cover_plate_handle contains the whole standard plate with all 11 holes open (same screws, same bay lid)", abs(inter(ph, std) - vol(std)) < 1.0 and all(inter(ph, h_) < 0.01 for h_ in holes))
+phw = M.place(ph)
+clash = [n for n, d in P.items() if n != "cover_plate" and inter(phw, d["shape"]) > 0.5]
+chk("cover_plate_handle clears every other part", not clash, ", ".join(clash))
+for x, z in M.CV_SCREWS:
+    hole = M.cyl_y(x, z, 5.8, M.T + M.CV_T, M.T + M.CV_T + 3)
+    if inter(hole, M.make_handle()) > 0.01: chk(f"cover screw head at {x:.0f},{z:.0f} reachable", False)
+chk("cover screw heads not covered by the handle", True)
+def steep_up(shape):
+    o = shape.rotate((0, 0, 0), (1, 0, 0), 90); zb = o.val().BoundingBox(); bad = 0.0
+    for f in o.faces().vals():
+        n = f.normalAt()
+        if n.z < -0.72 and f.Center().z > zb.zmin + 0.3: bad += f.Area()
+    return bad
+chk("cover_plate_handle: no overhang beyond 45 deg printed inner face down", steep_up(ph) < 1.0, f"{steep_up(ph):.1f} mm2")
 chk("front skin under insert holes >= 2.5", min(M.T - M.INS_DEPTH, M.SEAT_Y - M.INS_DEPTH) >= 2.5, f"{M.SEAT_Y - M.INS_DEPTH:.1f} (brackets, stops), {M.T - M.INS_DEPTH:.1f} (cover)")
 chk("wall behind contour lines at trough >= 5", M.TR_Y - M.LINE_D >= 5, f"{M.TR_Y - M.LINE_D:.1f}")
 chk("joint insert: skin to the front face >= 3, clear of contour lines and groove", (M.T - M.FLG_T - M.FLG_CLR - M.INS_DEPTH) >= 3.0 and M.JOINT_Z - M.INS_D / 2 >= max(M.GR_DEPTH, M.LINE_Z0 + M.LINE_PITCH + M.LINE_W) + 0.7 and M.JOINT_Z + M.INS_D / 2 <= M.LINE_Z0 + 2 * M.LINE_PITCH - 0.7, f"skin {M.T - M.FLG_T - M.FLG_CLR - M.INS_DEPTH:.2f}; hole z {M.JOINT_Z - M.INS_D / 2:.1f}-{M.JOINT_Z + M.INS_D / 2:.1f} between lines at {M.LINE_Z0 + M.LINE_PITCH + M.LINE_W:.1f} and {M.LINE_Z0 + 2 * M.LINE_PITCH:.1f}")
@@ -125,11 +148,14 @@ piv_f = M.RISER_Y + M.R_FOOT * math.tan(math.radians(90 - M.TILT) / 2); piv_r = 
 tip = {}
 for label, items in (("no ballast", head), ("one bar (rear)", head + steel[:1]), ("two bars", head + steel)):
     m, y, z = com(items); tip[label] = (m, math.degrees(math.atan2(y - piv_f, z)), math.degrees(math.atan2(piv_r - y, z)))
+F_N = tip["two bars"][0] / 1000 * 9.81; lever = M.HANDLE_D - 3
+sig = F_N * lever / (M.HANDLE_W * M.HANDLE_SLAB ** 2 / 6)
+chk("handle shelf root bending stress, whole monitor hanging from it, < 2 MPa", sig < 2.0, f"{sig:.2f} MPa for {F_N:.1f} N at {lever:.0f} mm (PLA across layers is roughly 15-25 MPa); shelf alone, ignoring web and cheeks")
 chk("forward tip angle with two bars >= 15 deg", tip["two bars"][1] >= 15, f"{tip['two bars'][1]:.1f}")
 bbs = [d["shape"].val().BoundingBox() for d in P.values()]
 dims = (max(b.xmax for b in bbs) - min(b.xmin for b in bbs), max(b.ymax for b in bbs) - min(b.ymin for b in bbs), max(b.zmax for b in bbs))
 with open(f"{OUT}/docs/validation_report.txt", "w") as f:
-    f.write("Neo-Mac monitor v0.11 -- CAD checks only (nothing sliced or printed)\n\n" + "\n".join(R))
+    f.write("Mac Studio Display SE/30 v0.12 -- CAD checks only (nothing sliced or printed)\n\n" + "\n".join(R))
     f.write(f"\n\nOverall: {dims[0]:.0f} W x {dims[1]:.0f} D x {dims[2]:.0f} H mm\n\nStability estimate (assumed: PLA 1.24 g/cm3 at 45-70 % effective fill, LCD 200 g, boards+cables 120 g, 220 mm steel bars):\n")
     for k, (m, fwd, back) in tip.items(): f.write(f"  {k:16s} mass {m:5.0f} g   tips forward at {fwd:5.1f} deg, backward at {back:5.1f} deg\n")
     f.write("\nPrint list (print orientation, mm):\n")
