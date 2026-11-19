@@ -1,0 +1,9 @@
+# build scratch from the CadQuery / render scripts
+source/_build/
+__pycache__/
+*.pyc
+# slicer output
+*.gcode
+*.bgcode
+# macOS
+.DS_Store
